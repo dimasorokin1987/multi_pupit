@@ -1,0 +1,3 @@
+eval Math.floor(Date.now()/1000)
+put_last_result_to timestamp
+append_object_to_list test_list {|timestamp|}

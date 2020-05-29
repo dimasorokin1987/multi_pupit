@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+  <style>
+    .refreshable{
+      box-shadow: 0px 0px 20px green;
+    }
+    .appliable{
+      box-shadow: 0px 0px 10px red;
+    }
+
+    .btn.refresh{
+      background: rgb(135, 238, 135);
+    }
+    .btn.apply{
+      background: rgb(238, 135, 135);;
+    }
+  </style>
+</head>
+
+
+<body>
+  <h1>pupit client</h1>
+  <table>
+    <tr>
+      <td>
+        <p>
+          <button id='init'>init</button>
+        </p>
+        <p>
+          <input type='text' id='userAgent' placeholder='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36'
+            value='' />
+          <button id='setUserAgent'>set useer agent</button>
+          <button id='genUserAgent'>gen user agent</button>
+        </p>
+        <p>
+          <select id='resolution'>
+            <option value='w=1920&h=1080&'>1920x1080</option>
+            <option value='w=1024&h=768&' selected='selected'>1024x768</option>
+            <option value='w=640&h=480&'>640x480</option>
+          </select>
+          <button id='setViewportSize'>set viewport size</button>
+        </p>
+        <p>
+          <select id='device'>
+            <option value='iPhone X'>iPhone X</option>
+            <option value='iPhone X landscape'>iPhone X landscape</option>
+            <option value='Nexus 10'>Nexus 10</option>
+            <option value='JioPhone 2'>JioPhone 2</option>
+            <option value='Pixel 2 XL landscape'>Pixel 2 XL landscape</option>
+          </select>
+          <button id='emulateDevice'>emulate device</button>
+        </p>
+        <!--<p>
+          <input type='text' id='proxy' placeholder='user:password@ip:port' />
+          <button id='setProxy'>set proxy</button>
+        </p>-->
+        <p>       
+          <button id='open' disabled>open</button>
+        </p>
+        <p>  
+          <span>tabs: </span>
+          <button id='create'>create</button>
+          <button id='prev'>prev</button>
+          <button id='next'>next</button>
+        </p>
+        <p>
+          <input type='text' id='url' placeholder='url' value='https://pptr.dev' />
+          <button id='goto'>navigate</button>
+        </p>
+        <p>
+          <input type='text' id='rect' placeholder='x,y,w,h' value='' />
+          <button id='screenshot'>screenshot</button>
+        </p>
+        <p>
+          <input type='text' id='txt' placeholder='text' value='' />
+          <button id='enterText'>enter</button>
+        </p>
+        <p>
+          <select id='key' placeholder='key'>
+            <option value='Enter'>Enter</option>
+            <option value='Tab'>Tab</option>
+            <option value='Space'>Space</option>
+            <option value='Escape'>Escape</option>
+            <option value='Backspace'>Backspace</option>
+            <option value='CapsLock'>CapsLock</option>
+            <option value='ArrowUp'>Up</option>
+            <option value='ArrowDown'>Down</option>
+            <option value='ArrowLeft'>Left</option>
+            <option value='ArrowRight'>Right</option>
+            <option value='VolumeUp'>VolumeUp</option>
+            <option value='VolumeDown'>VolumeDown</option>
+          </select>
+          <button id='pressKey'>press</button>
+        </p>
+        <p>
+          <textarea id='taExec' placeholder='alert()'></textarea>
+          <button id='exec'>exec</button>
+        </p>
+        <p>
+          <button id='close' disabled>close</button>
+        </p>
+      </td>
+      <td>        
+        <textarea id='sequence' style='height:300px' placeholder="init&#10;emulate_device iPhone_X&#10;open&#10;goto https://google.com&#10;wait 1..2s&#10;&#10;exec location.href!=='https://www.google.com/'&#10;put_last_result_to navigation_failed&#10;&#10;skip_next_if_true {|navigation_failed|}&#10;expand_with append_timestamp&#10;&#10;enter_text hello world&#10;press_key Enter&#10;wait 3s&#10;screenshot&#10;&#10;close&#10;release&#10;stop&#10;"></textarea>
+        <p>
+          <button id='clear'>clear</button>
+          <span>exec:</span>
+          <button id='start'>start</button>
+          <button id='stop'>stop</button>
+        </p>
+      </td>
+      <td>
+        <textarea id='variables' style='height:300px' placeholder='login=aaaa&#10;password=pppp&#10;'></textarea>
+        <p>
+          <button id='refresh' class='btn refresh'>refresh</button>
+          <button id='apply' class='btn apply'>apply</button>
+        </p>
+      </td>
+    </tr>
+  </table>
+  <img />
+  <script type='module'>
+    import createCmder from './cmder_web.mjs';
+
+    const imgScreenshot = document.querySelector('img');
+    const initButton = document.querySelector('#init');
+    const userAgentInput = document.querySelector('#userAgent');
+    const setUserAgentButton = document.querySelector('#setUserAgent');
+    const genUserAgentButton = document.querySelector('#genUserAgent');
+    const resolutionSelect = document.querySelector('#resolution');
+    const setViewportSizeButton = document.querySelector('#setViewportSize');
+    const deviceSelect = document.querySelector('#device');
+    const emulateDeviceButton = document.querySelector('#emulateDevice');
+    //const proxyInput = document.querySelector('#proxy');
+    //const setProxyButton = document.querySelector('#setProxy');
+    const openButton = document.querySelector('#open');
+    const createTabButton = document.querySelector('#create');
+    const prevTabButton = document.querySelector('#prev');
+    const nextTabButton = document.querySelector('#next');
+    const urlInput = document.querySelector('#url');
+    const gotoButton = document.querySelector('#goto');
+    const rectInput = document.querySelector('#rect');
+    const screenshotButton = document.querySelector('#screenshot');
+    const txtInput = document.querySelector('#txt');
+    const enterTextButton = document.querySelector('#enterText');
+    const keySelect = document.querySelector('#key');
+    const pressKeyButton = document.querySelector('#pressKey');
+    const taExec = document.querySelector('#taExec');
+    const execButton = document.querySelector('#exec');
+    const closeButton = document.querySelector('#close');
+
+    const taSequence = document.querySelector('#sequence');
+    const clearButton = document.querySelector('#clear');
+    const seqExecButton = document.querySelector('#start');
+    const seqExecStopButton = document.querySelector('#stop');
+
+    const taVariables = document.querySelector('#variables');
+    const refreshButton = document.querySelector('#refresh');
+    const applyButton = document.querySelector('#apply');
+    
+    const cmder = createCmder({imgScreenshot});
+    let lastAppliedVersion = '';
+
+
+    const executeSingleCmd = async(strCmd) => {
+      taSequence.value += strCmd;
+      const r = await cmder.executeCmd(strCmd);
+      taSequence.value += ` => ${r}\n`;
+      taSequence.scrollTop = taSequence.scrollHeight;
+      return r;
+    };
+
+    initButton.onclick = async() => {
+      await executeSingleCmd('init');
+      initButton.disabled = true;
+      openButton.disabled = false;
+      closeButton.disabled = true;
+    };
+
+    setUserAgentButton.onclick = async() => {
+      const userAgent = userAgentInput.value;
+      await executeSingleCmd(`set_user_agent ${userAgent}`);
+    };
+
+    genUserAgentButton.onclick = async() => {
+      await executeSingleCmd('gen_user_agent');
+    };
+
+    // setProxyButton.onclick = async() => {
+    //   const proxy = proxyInput.value;
+    //   await executeSingleCmd(`set_proxy ${proxy}`);
+    // };
+
+    setViewportSizeButton.onclick = async() => {
+      const resolution = resolutionSelect.value;
+      await executeSingleCmd(`set_viewport_size ${resolution}`);
+    };
+
+    emulateDeviceButton.onclick = async() => {
+      const unspasedDeviceString = deviceSelect.value.replace(' ','_');
+      await executeSingleCmd(`emulate_device ${unspasedDeviceString}`);
+    };
+
+    openButton.onclick = async() => {
+      await executeSingleCmd(`open`);
+      initButton.disabled = true;
+      openButton.disabled = true;
+      closeButton.disabled = false;
+    };
+
+    createTabButton.onclick = async() => {
+      await executeSingleCmd(`create_tab`);
+    };
+    prevTabButton.onclick = async() => {
+      await executeSingleCmd(`prev_tab`);
+    };
+    nextTabButton.onclick = async() => {
+      await executeSingleCmd(`next_tab`);
+    };
+
+    gotoButton.onclick = async() => {
+      const url = urlInput.value;
+      await executeSingleCmd(`goto ${url}`);
+    };
+
+    screenshotButton.onclick = async() => {
+      const rect = rectInput.value;
+      await executeSingleCmd(`screenshot ${rect}`);
+    };
+
+    imgScreenshot.onclick = async(e) => {
+      const rect = e.target.getBoundingClientRect();
+      const x = Math.floor(e.clientX - rect.left); //x position within the element.
+      const y = Math.floor(e.clientY - rect.top);
+      await executeSingleCmd(`click ${x} ${y}`);
+    };
+
+    enterTextButton.onclick = async() => {
+      const text = txtInput.value
+      await executeSingleCmd(`enter_text ${text}`);
+    };
+
+    pressKeyButton.onclick = async() => {
+      const key = keySelect.value;
+      await executeSingleCmd(`press_key ${key}`);
+    };
+
+    execButton.onclick = async() => {
+      const js = taExec.value;
+      // .replace(/\\/g,"\\\\")
+      // .replace(/`/g,"\\\`");
+      await executeSingleCmd(`exec ${js}`);
+    };
+
+    closeButton.onclick = async() => {
+      await executeSingleCmd('close');
+      initButton.disabled = false;
+      openButton.disabled = true;
+      closeButton.disabled = true;
+    };
+
+    clearButton.onclick = e => {
+      taSequence.value = taSequence.value.replace(/ => (.*)$/gm,(str,r)=>r==='expanded'?str:'')
+      //.replace(/ => .*$/gm, '');
+    };
+
+    seqExecButton.onclick = async() => {
+      let pupitScript = taSequence.value;
+      let result = await cmder.execPupitScript(pupitScript, (cmdResult,i,totalResult)=>{
+        let cmd = cmdResult.split(' ').shift();
+        if([
+          'get_object_by_id',
+          'get_random_object_from_list',
+          'load_list'
+        ].includes(cmd)){
+          taVariables.classList.add('refreshable');
+        }
+        taSequence.value = totalResult.join('\n');
+      });
+      alert(result);
+    };
+
+    seqExecStopButton.onclick = async() => {
+      cmder.stop();
+    };
+
+    refreshButton.onclick = async() => {
+      const variables = cmder.getVariables();
+      taVariables.value = JSON.stringify(variables, null, 2);
+      taVariables.classList.remove('refreshable');
+    };
+
+    applyButton.onclick = async() => {
+      const json = taVariables.value;
+      const obj = JSON.parse(json);
+
+      cmder.assignVariables(obj);
+      lastAppliedVersion = taVariables.value;
+      taVariables.classList.remove('appliable');
+    };
+
+    taVariables.oninput = async()=>{
+      if(taVariables.value === lastAppliedVersion){
+        taVariables.classList.remove('appliable');
+      }else{
+        taVariables.classList.add('appliable');
+      }
+    }
+
+  </script>
+</body>
+
+</html>

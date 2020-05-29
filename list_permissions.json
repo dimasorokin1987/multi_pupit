@@ -1,0 +1,17 @@
+{  
+  "appendable": [
+    "test_list",
+    "permitted_urls"
+  ],
+  "loadable": [
+    "test_list",
+    "permitted_urls"
+  ],
+  "storable": [
+    "test_list",
+    "permitted_urls"
+  ],
+  "readable": [
+    "test_list"
+  ]
+}

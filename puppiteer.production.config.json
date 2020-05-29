@@ -1,0 +1,25 @@
+{
+  "args":[
+    "--incognito",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-infobars",
+    "--disable-default-apps",
+    "--disable-extensions",
+    "--disable-sync",
+    "--disable-translate",
+    "--disable-crash-reporter",
+    "--disable-client-side-phishing-detection",
+    "--safebrowsing-disable-auto-update",
+    "--disable-background-networking",
+    "--enable-features=NetworkService",
+    "--window-position=0,0",
+    "--no-first-run",
+    "--no-zygote",
+    "--lang=en-US,en;q=0.9"
+  ],
+  "ignoreDefaultArgs": ["--enable-automation"],
+  "ignoreHTTPSErrors": true,
+  "slowMo": 200,
+  "executablePath": "/usr/bin/chromium-browser"
+}

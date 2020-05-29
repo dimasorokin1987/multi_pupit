@@ -1,0 +1,1 @@
+node --experimental-modules multi_pupit_single_proxy.mjs
